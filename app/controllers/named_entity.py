@@ -42,9 +42,9 @@ class NamedEntity:
         named_entities = {}
         try:
             if entity_id is None:
-                named_entities = self.service.get_users()
+                named_entities = self.service.get_named_entities()
             else:
-                named_entity = self.service.get_user(entity_id)
+                named_entity = self.service.get_named_entity(entity_id)
         except LookupError as error:
             self.logger.error('Error Occurred: {error}'.format(error=error))
             return ApiResponse.failure({
@@ -99,27 +99,20 @@ class NamedEntity:
                 'response':{}
             }, 400)
 
-        username = body_params['username'] if 'username' in body_params else None
-        password = body_params['password'] if 'password' in body_params else None
-        first_name = body_params['first_name'] if 'first_name' in body_params else None
-        last_name = body_params['last_name'] if 'last_name' in body_params else None
-        role = body_params['role'] if 'role' in body_params else None
+        value = body_params['value'] if 'value' in body_params else None
+        description = body_params['description'] if 'description' in body_params else None
+        user_id = body_params['user_id'] if 'user_id' in body_params else None
+        should_use = body_params['should_use'] if 'should_use' in body_params else None
 
-        user_data = {
-            'username': username,
-            'password': password,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0,
-            'ip_address': None,
-            'last_login_time': None,
+        entity_data = {
+            'value': value,
+            'description': description,
+            'user_id': user_id,
+            'should_use': bool(should_use) if should_use is bool else False,
         }
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
-
         try:
-            named_entity = self.service.add_user(user_data)
+            named_entity = self.service.add_named_entity(entity_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
@@ -181,23 +174,20 @@ class NamedEntity:
                 'response':{}
             }, 400)
 
-        username = body_params['username'] if 'username' in body_params else None
-        first_name = body_params['first_name'] if 'first_name' in body_params else None
-        last_name = body_params['last_name'] if 'last_name' in body_params else None
-        role = body_params['role'] if 'role' in body_params else None
+        value = body_params['value'] if 'value' in body_params else None
+        description = body_params['description'] if 'description' in body_params else None
+        user_id = body_params['user_id'] if 'user_id' in body_params else None
+        should_use = body_params['should_use'] if 'should_use' in body_params else None
 
-        user_data = {
-            'username': username,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0
+        entity_data = {
+            'value': value,
+            'description': description,
+            'user_id': user_id,
+            'should_use': bool(should_use) if should_use is bool else False,
         }
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
-
         try:
-            named_entity = self.service.update_user(entity_id, user_data)
+            named_entity = self.service.update_named_entity(entity_id, entity_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
@@ -249,11 +239,11 @@ class NamedEntity:
         ))
 
         try:
-            is_deleted = self.service.delete_user(entity_id)
+            is_deleted = self.service.delete_named_entity(entity_id)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the named_entity. ' +
+                'message': 'Error occured while deleting the named_entity. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)

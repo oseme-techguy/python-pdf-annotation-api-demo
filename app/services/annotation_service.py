@@ -105,6 +105,7 @@ class AnnotationService:
 
         data['annotation_id'] = annotation_id # set the annotation_id for this record
         data['annotation_id'] = 0; # default version is 0
+        data['is_deleted'] = False; # default value is False
 
         try:
             saved_annotation = Annotation.create(**data)

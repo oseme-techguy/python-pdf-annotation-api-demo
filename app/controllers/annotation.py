@@ -41,9 +41,9 @@ class Annotation:
         annotations = {}
         try:
             if annotation_id is None:
-                annotations = self.service.get_users()
+                annotations = self.service.get_annotations()
             else:
-                annotation = self.service.get_user(annotation_id)
+                annotation = self.service.get_annotation(annotation_id)
         except LookupError as error:
             self.logger.error('Error Occurred: {error}'.format(error=error))
             return ApiResponse.failure({
@@ -67,6 +67,7 @@ class Annotation:
             'response': return_data
         })
 
+
     def get_document_annotations(self, request, document_id=None):
         """Fetches annotation(s) on the document on the service
         - Receive and parse get request
@@ -80,9 +81,6 @@ class Annotation:
         Returns:
             object -- response from this endpoint
         """
-
-        # query_params = request.raw_args
-        # annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
 
         self.logger.info('Received get annotations request for document_id: {document_id}'.format(
             document_id=(document_id if document_id is not None else '')
@@ -141,27 +139,18 @@ class Annotation:
                 'response':{}
             }, 400)
 
-        username = body_params['username'] if 'username' in body_params else None
-        password = body_params['password'] if 'password' in body_params else None
-        first_name = body_params['first_name'] if 'first_name' in body_params else None
-        last_name = body_params['last_name'] if 'last_name' in body_params else None
-        role = body_params['role'] if 'role' in body_params else None
+        document_id = body_params['document_id'] if 'document_id' in body_params else None
+        user_id = body_params['user_id'] if 'user_id' in body_params else None
+        data = body_params['data'] if 'data' in body_params else None
 
-        user_data = {
-            'username': username,
-            'password': password,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0,
-            'ip_address': None,
-            'last_login_time': None,
+        annotation_data = {
+            'document_id': document_id,
+            'user_id': user_id,
+            'data': data,
         }
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
-
         try:
-            annotation = self.service.add_user(user_data)
+            annotation = self.service.add_annotation(annotation_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
@@ -223,23 +212,18 @@ class Annotation:
                 'response':{}
             }, 400)
 
-        username = body_params['username'] if 'username' in body_params else None
-        first_name = body_params['first_name'] if 'first_name' in body_params else None
-        last_name = body_params['last_name'] if 'last_name' in body_params else None
-        role = body_params['role'] if 'role' in body_params else None
+        document_id = body_params['document_id'] if 'document_id' in body_params else None
+        user_id = body_params['user_id'] if 'user_id' in body_params else None
+        data = body_params['data'] if 'data' in body_params else None
 
-        user_data = {
-            'username': username,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0
+        annotation_data = {
+            'document_id': document_id,
+            'user_id': user_id,
+            'data': data
         }
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
-
         try:
-            annotation = self.service.update_user(annotation_id, user_data)
+            annotation = self.service.update_annotation(annotation_id, annotation_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
@@ -291,11 +275,11 @@ class Annotation:
         ))
 
         try:
-            is_deleted = self.service.delete_user(annotation_id)
+            is_deleted = self.service.delete_annotation(annotation_id)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the annotation. ' +
+                'message': 'Error occured while deleting the annotation. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
