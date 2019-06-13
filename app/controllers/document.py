@@ -42,9 +42,9 @@ class Document:
         documents = {}
         try:
             if document_id is None:
-                documents = self.service.get_users()
+                documents = self.service.get_documents()
             else:
-                document = self.service.get_user(document_id)
+                document = self.service.get_document(document_id)
         except LookupError as error:
             self.logger.error('Error Occurred: {error}'.format(error=error))
             return ApiResponse.failure({
@@ -99,27 +99,16 @@ class Document:
                 'response':{}
             }, 400)
 
-        username = body_params['username'] if 'username' in body_params else None
-        password = body_params['password'] if 'password' in body_params else None
-        first_name = body_params['first_name'] if 'first_name' in body_params else None
-        last_name = body_params['last_name'] if 'last_name' in body_params else None
-        role = body_params['role'] if 'role' in body_params else None
+        pdf_content = body_params['pdf_content'] if 'pdf_content' in body_params else None
+        user_id = body_params['user_id'] if 'user_id' in body_params else None
 
-        user_data = {
-            'username': username,
-            'password': password,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0,
-            'ip_address': None,
-            'last_login_time': None,
+        document_data = {
+            'pdf_content': pdf_content,
+            'user_id': user_id,
         }
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
-
         try:
-            document = self.service.add_user(user_data)
+            document = self.service.upload_document(document_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
@@ -137,7 +126,7 @@ class Document:
         # Return document object on successful login
         return ApiResponse.success({
             'code': 201,
-            'message': 'document was successfully created',
+            'message': 'document was successfully uploaded',
             'response': document
         }, 201)
 
@@ -181,23 +170,16 @@ class Document:
                 'response':{}
             }, 400)
 
-        username = body_params['username'] if 'username' in body_params else None
-        first_name = body_params['first_name'] if 'first_name' in body_params else None
-        last_name = body_params['last_name'] if 'last_name' in body_params else None
-        role = body_params['role'] if 'role' in body_params else None
+        pdf_content = body_params['pdf_content'] if 'pdf_content' in body_params else None
+        user_id = body_params['user_id'] if 'user_id' in body_params else None
 
-        user_data = {
-            'username': username,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0
+        document_data = {
+            'pdf_content': pdf_content,
+            'user_id': user_id
         }
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
-
         try:
-            document = self.service.update_user(document_id, user_data)
+            document = self.service.update_document(document_id, document_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
@@ -249,11 +231,11 @@ class Document:
         ))
 
         try:
-            is_deleted = self.service.delete_user(document_id)
+            is_deleted = self.service.delete_document(document_id)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the document. ' +
+                'message': 'Error occured while deleting the document. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)

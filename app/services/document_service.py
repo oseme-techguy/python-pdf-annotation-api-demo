@@ -30,7 +30,7 @@ class DocumentService:
             raise ValueError('id of document to fetch cannot be None')
 
         try:
-            document = Document.select().where(Document.document_id == str(document_id)).get()
+            document = Document.select().where(Document.ref_id == str(document_id)).get()
             return Utilities.convert_uuid_fields(model_to_dict(document))
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
@@ -77,7 +77,7 @@ class DocumentService:
         if document_id is None:
             document_id = Utilities.generate_id() # generate an uuid for this record
 
-        data['document_id'] = document_id # set the document_id for this record
+        data['ref_id'] = document_id # set the document_id for this record
 
         try:
             saved_document = Document.create(**data)
