@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+sanic = "==0.7.0"
+sanic-ipware = "*"
+dependency-injector = "==3.11.1"
+peewee = "*"
+pymysql = "*"
+requests = "==2.19.1"
+pip = "==18.0"
+
+[dev-packages]
+pylint = "*"
+
+[scripts]
+lint = "pylint --rcfile=.pylintrc api.py app"
+api = "python3 api.py"
+consumers = "python3 consumers.py"
+
+[requires]
+python_version = "3.7"

@@ -77,7 +77,7 @@ See API documentation in Postman collection.
 
 Item     					| Value
 --------------------------- | ---------------------------
-API_ENV     			    | (development, production, staging)
+ENVIRONMENT     			| (development, production, staging)
 API_HOST     			    | Host for api to run on
 API_PORT     			    | Port for app to run on
 AWS_RDS_CONNECTION_URI 	    | Database full connection uri(this takes priority if not empty)
