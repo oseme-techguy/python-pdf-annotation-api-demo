@@ -1,5 +1,6 @@
 """User Controller
 """
+
 from sanic import response
 from sanic_ipware import get_client_ip
 from app.helpers import ApiResponse
@@ -84,6 +85,7 @@ class User:
             'response': user
         })
 
+
     def get_users(self, request, user_id=None):
         """Fetches user(s) on the service
         - Receive and parse get request
@@ -126,7 +128,6 @@ class User:
             }, 404)
 
         return_data = user if user is not None else users
-        print(return_data)
 
         # Return user object on successful login
         return ApiResponse.success({
@@ -209,7 +210,7 @@ class User:
         }, 201)
 
 
-    def update_users(self, request):
+    def update_users(self, request, user_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - update model within db
@@ -225,13 +226,11 @@ class User:
         """
 
         request_body = request.body
-        query_params = request.raw_args
         body_params = {}
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        user_id = query_params['user_id'] if 'user_id' in query_params else None
-        if user_id is None or user_id is None:
+        if user_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the user_id of the user to patch',
                 'response': {}
@@ -253,15 +252,17 @@ class User:
         last_name = body_params['last_name'] if 'last_name' in body_params else None
         role = body_params['role'] if 'role' in body_params else None
 
-        user_data = {
-            'username': username,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': int(role) if role is not None else 0
-        }
+        user_data = {}
 
-        if user_data['role'] < 0 or user_data['role'] > 1:
-            user_data['role'] = 0
+        if first_name is not None:
+            user_data['first_name'] = first_name
+        if last_name is not None:
+            user_data['last_name'] = last_name
+        if username is not None:
+            user_data['username'] = username
+        if role is not None:
+            role = int(role, base=10)
+            user_data['role'] = 0 if (role < 0 or role > 1) else role
 
         try:
             user = self.service.update_user(user_id, user_data)

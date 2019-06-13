@@ -1,5 +1,6 @@
 """Annotation Service"""
 
+import datetime
 from peewee import *
 from playhouse.shortcuts import model_to_dict, dict_to_model
 from app.config.settings import SETTINGS
@@ -32,7 +33,7 @@ class AnnotationService:
 
         try:
             annotation = Annotation.select().where(Annotation.annotation_id == str(annotation_id)).get()
-            return Utilities.convert_uuid_fields(model_to_dict(annotation))
+            return Utilities.convert_unserializable_fields(model_to_dict(annotation))
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Annotation does not exists on this service')
@@ -51,9 +52,13 @@ class AnnotationService:
             List -- the list of annotation objects or an empty list
         """
 
+        all_annotations = []
         try:
             annotations = Annotation.select()
-            return Utilities.convert_uuid_fields(model_to_dict(annotations))
+            for annotation in annotations:
+                all_annotations \
+                    .append(Utilities.convert_unserializable_fields(model_to_dict(annotation)))
+            return all_annotations
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Error while fetching all annotations on this service')
@@ -73,9 +78,12 @@ class AnnotationService:
         if document_id is None:
             raise ValueError('id of document cannot be None')
 
+        all_annotations = []
         try:
             annotations = Annotation.select().where(Annotation.document_id == str(document_id)).get()
-            return Utilities.convert_uuid_fields(model_to_dict(annotations))
+            for annotation in annotations:
+                all_annotations.append(Utilities.convert_unserializable_fields(model_to_dict(annotation)))
+            return all_annotations
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Annotations does not exists on this document')
@@ -134,8 +142,18 @@ class AnnotationService:
         if data is None:
             raise ValueError('annotation data cannot be None or empty')
 
+        data['last_modified_at'] = datetime.datetime.now()
+
         try:
-            updated_rows = Annotation.update(**data).where(Annotation.annotation_id == annotation_id).execute()
+            # if this is an update query to set is_deleted as True,
+            # don't increment the version number
+            if data['is_deleted'] is not None and data['is_deleted']:
+                query = Annotation.update(**data)
+            else:
+                query = Annotation.update(**data, version_number=Annotation.version_number+1)
+
+            updated_rows = query \
+                .where(Annotation.annotation_id == annotation_id).execute()
             return updated_rows > 0
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
@@ -143,7 +161,7 @@ class AnnotationService:
 
         return False
 
-    def delete_annotation(self, annotation_id=None):
+    def delete_annotation(self, annotation_id=None, hard_delete=False):
         """Deletes the annotation with the annotation_id from this service.
 
         Arguments:
@@ -157,8 +175,15 @@ class AnnotationService:
             raise ValueError('id of annotation to delete cannot be None')
 
         try:
-            deleted_rows = Annotation.delete().where(Annotation.annotation_id == annotation_id).execute()
-            return deleted_rows > 0
+            if hard_delete:
+                deleted_rows = Annotation \
+                    .delete() \
+                    .where(Annotation.annotation_id == annotation_id).execute()
+                return deleted_rows > 0
+
+            return self.update_annotation(annotation_id, {
+                'is_deleted': True
+            })
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Annotation does not exists on this service')

@@ -131,7 +131,7 @@ class Document:
         }, 201)
 
 
-    def update_documents(self, request):
+    def update_documents(self, request, document_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - update model within db
@@ -147,13 +147,11 @@ class Document:
         """
 
         request_body = request.body
-        query_params = request.raw_args
         body_params = {}
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        document_id = query_params['document_id'] if 'document_id' in query_params else None
-        if document_id is None or document_id is None:
+        if document_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the document_id of the document to patch',
                 'response': {}
@@ -173,10 +171,12 @@ class Document:
         pdf_content = body_params['pdf_content'] if 'pdf_content' in body_params else None
         user_id = body_params['user_id'] if 'user_id' in body_params else None
 
-        document_data = {
-            'pdf_content': pdf_content,
-            'user_id': user_id
-        }
+        document_data = {}
+
+        if pdf_content is not None:
+            document_data['pdf_content'] = pdf_content
+        if user_id is not None:
+            document_data['user_id'] = user_id
 
         try:
             document = self.service.update_document(document_id, document_data)
@@ -202,7 +202,7 @@ class Document:
         }, 200)
 
 
-    def delete_documents(self, request):
+    def delete_documents(self, request, document_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - delete document where document_id in db
@@ -217,10 +217,10 @@ class Document:
             object -- response from this endpoint
         """
 
-        query_params = request.raw_args
-        document_id = query_params['document_id'] if 'document_id' in query_params else None
+        # query_params = request.raw_args
+        # document_id = query_params['document_id'] if 'document_id' in query_params else None
 
-        if document_id is None or document_id is None:
+        if document_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the document_id of the document to patch',
                 'response': {}

@@ -135,7 +135,7 @@ class NamedEntity:
         }, 201)
 
 
-    def update_entities(self, request):
+    def update_entities(self, request, entity_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - update model within db
@@ -151,13 +151,11 @@ class NamedEntity:
         """
 
         request_body = request.body
-        query_params = request.raw_args
         body_params = {}
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        entity_id = query_params['entity_id'] if 'entity_id' in query_params else None
-        if entity_id is None or entity_id is None:
+        if entity_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the entity_id of the named_entity to patch',
                 'response': {}
@@ -179,12 +177,16 @@ class NamedEntity:
         user_id = body_params['user_id'] if 'user_id' in body_params else None
         should_use = body_params['should_use'] if 'should_use' in body_params else None
 
-        entity_data = {
-            'value': value,
-            'description': description,
-            'user_id': user_id,
-            'should_use': bool(should_use) if should_use is bool else False,
-        }
+        entity_data = {}
+
+        if value is not None:
+            entity_data['value'] = value
+        if description is not None:
+            entity_data['description'] = description
+        if user_id is not None:
+            entity_data['user_id'] = user_id
+        if should_use is not None:
+            entity_data['should_use'] = bool(should_use) if should_use is bool else False
 
         try:
             named_entity = self.service.update_named_entity(entity_id, entity_data)
@@ -210,7 +212,7 @@ class NamedEntity:
         }, 200)
 
 
-    def delete_entities(self, request):
+    def delete_entities(self, request, entity_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - delete named_entity where entity_id in db
@@ -225,10 +227,10 @@ class NamedEntity:
             object -- response from this endpoint
         """
 
-        query_params = request.raw_args
-        entity_id = query_params['entity_id'] if 'entity_id' in query_params else None
+        # query_params = request.raw_args
+        # entity_id = query_params['entity_id'] if 'entity_id' in query_params else None
 
-        if entity_id is None or entity_id is None:
+        if entity_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the entity_id of the named_entity to patch',
                 'response': {}

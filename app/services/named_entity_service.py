@@ -1,5 +1,6 @@
 """NamedEntity Service"""
 
+import datetime
 from peewee import *
 from playhouse.shortcuts import model_to_dict, dict_to_model
 from app.config.settings import SETTINGS
@@ -31,7 +32,7 @@ class NamedEntityService:
 
         try:
             named_entity = NamedEntity.select().where(NamedEntity.entity_id == str(entity_id)).get()
-            return Utilities.convert_uuid_fields(model_to_dict(named_entity))
+            return Utilities.convert_unserializable_fields(model_to_dict(named_entity))
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('NamedEntity does not exists on this service')
@@ -50,9 +51,13 @@ class NamedEntityService:
             List -- the list of named_entity objects or an empty list
         """
 
+        all_named_entities = []
         try:
             named_entities = NamedEntity.select()
-            return Utilities.convert_uuid_fields(model_to_dict(named_entities))
+            for named_entity in named_entities:
+                all_named_entities \
+                    .append(Utilities.convert_unserializable_fields(model_to_dict(named_entity)))
+            return all_named_entities
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Error while fetching all named_entities on this service')
@@ -105,6 +110,8 @@ class NamedEntityService:
 
         if data is None:
             raise ValueError('named_entity data cannot be None or empty')
+
+        data['last_modified_at'] = datetime.datetime.now()
 
         try:
             updated_rows = NamedEntity.update(**data).where(NamedEntity.entity_id == entity_id).execute()

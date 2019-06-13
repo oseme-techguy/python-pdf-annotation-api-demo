@@ -146,7 +146,7 @@ class Annotation:
         annotation_data = {
             'document_id': document_id,
             'user_id': user_id,
-            'data': data,
+            'data': json.dumps(data), # serialize the annotation data
         }
 
         try:
@@ -173,7 +173,7 @@ class Annotation:
         }, 201)
 
 
-    def update_annotations(self, request):
+    def update_annotations(self, request, annotation_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - update model within db
@@ -189,22 +189,22 @@ class Annotation:
         """
 
         request_body = request.body
-        query_params = request.raw_args
         body_params = {}
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
-        if annotation_id is None or annotation_id is None:
+        if annotation_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the annotation_id of the annotation to patch',
                 'response': {}
             }, 400)
 
-        self.logger.info('Received update annotation request for id: {annotation_id} // : {params}'.format(
-            annotation_id=annotation_id,
-            params=body_params
-        ))
+        self.logger.info(
+            'Received update annotation request for id: {annotation_id} // : {params}' \
+                .format(
+                    annotation_id=annotation_id,
+                    params=body_params
+                ))
 
         if not body_params.keys():
             return ApiResponse.failure({
@@ -216,11 +216,14 @@ class Annotation:
         user_id = body_params['user_id'] if 'user_id' in body_params else None
         data = body_params['data'] if 'data' in body_params else None
 
-        annotation_data = {
-            'document_id': document_id,
-            'user_id': user_id,
-            'data': data
-        }
+        annotation_data = {}
+
+        if document_id is not None:
+            annotation_data['document_id'] = document_id
+        if user_id is not None:
+            annotation_data['user_id'] = user_id
+        if data is not None:
+            annotation_data['data'] = json.dumps(data) # serialize the annotation data
 
         try:
             annotation = self.service.update_annotation(annotation_id, annotation_data)
@@ -246,7 +249,7 @@ class Annotation:
         }, 200)
 
 
-    def delete_annotations(self, request):
+    def delete_annotations(self, request, annotation_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - delete annotation where annotation_id in db
@@ -261,10 +264,10 @@ class Annotation:
             object -- response from this endpoint
         """
 
-        query_params = request.raw_args
-        annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
+        # query_params = request.raw_args
+        # annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
 
-        if annotation_id is None or annotation_id is None:
+        if annotation_id is None:
             return ApiResponse.failure({
                 'message': 'Kindly pass the annotation_id of the annotation to patch',
                 'response': {}

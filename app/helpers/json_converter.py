@@ -5,7 +5,7 @@ from uuid import UUID
 from datetime import datetime
 
 class JSONConverter(json.JSONEncoder):
-    """UUIDConverter
+    """JSONConverter
     """
 
     def default(self, obj):

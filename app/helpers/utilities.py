@@ -21,8 +21,8 @@ class Utilities:
         return uuid.uuid4().hex
 
     @staticmethod
-    def convert_uuid_fields(json_object):
-        """Converts uuid fields in json
+    def convert_unserializable_fields(json_object):
+        """Converts unserializable fields in json
         """
         return json.loads(json.dumps(json_object, cls=JSONConverter))
 

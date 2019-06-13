@@ -1,5 +1,6 @@
 """User Service"""
 
+import datetime
 from peewee import *
 from playhouse.shortcuts import model_to_dict, dict_to_model
 from app.config.settings import SETTINGS
@@ -55,7 +56,7 @@ class UserService:
 
         try:
             user = User.select().where(User.user_id == str(user_id)).get()
-            return Utilities.convert_uuid_fields(model_to_dict(user))
+            return Utilities.convert_unserializable_fields(model_to_dict(user))
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('User does not exists on this service')
@@ -73,15 +74,18 @@ class UserService:
         Returns:
             List -- the list of user objects or an empty list
         """
-
+        all_users = []
         try:
             users = User.select()
-            return Utilities.convert_uuid_fields(model_to_dict(users))
+            for user in users:
+                all_users \
+                    .append(Utilities.convert_unserializable_fields(model_to_dict(user)))
+            return all_users
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Error while fetching all users on this service')
 
-        return {}
+        return []
 
 
     def add_user(self, data=None, user_id=None):
@@ -129,6 +133,8 @@ class UserService:
 
         if data is None:
             raise ValueError('user data cannot be None or empty')
+
+        data['last_modified_at'] = datetime.datetime.now()
 
         try:
             updated_rows = User.update(**data).where(User.user_id == user_id).execute()

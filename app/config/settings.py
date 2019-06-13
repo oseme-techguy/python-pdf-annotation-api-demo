@@ -25,7 +25,10 @@ SETTINGS = {
             'named_entities': 'named_entities',
         },
     },
-    'location_lookup_url':environ.get('LOCATION_LOOKUP_URL'),
+    'location_lookup': {
+        'url': environ.get('LOCATION_LOOKUP_URL'),
+        'search_size': environ.get('LOCATION_LOOKUP_SEARCH_SIZE')
+    },
     'log_level':environ.get('LOG_LEVEL'),
     'enable_console_logging':environ.get('LOG_ENABLE_CONSOLE'),
 }

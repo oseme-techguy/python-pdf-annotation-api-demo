@@ -10,6 +10,8 @@ dependency-injector = "==3.11.1"
 peewee = "*"
 pymysql = "*"
 requests = "==2.19.1"
+spacy = "*"
+PyPDF2 = "*"
 pip = "==18.0"
 
 [dev-packages]

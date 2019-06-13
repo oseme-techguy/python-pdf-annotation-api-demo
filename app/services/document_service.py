@@ -1,5 +1,6 @@
 """Document Service"""
 
+import datetime
 from peewee import *
 from playhouse.shortcuts import model_to_dict, dict_to_model
 from app.config.settings import SETTINGS
@@ -31,7 +32,7 @@ class DocumentService:
 
         try:
             document = Document.select().where(Document.ref_id == str(document_id)).get()
-            return Utilities.convert_uuid_fields(model_to_dict(document))
+            return Utilities.convert_unserializable_fields(model_to_dict(document))
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Document does not exists on this service')
@@ -50,9 +51,13 @@ class DocumentService:
             List -- the list of document objects or an empty list
         """
 
+        all_documents = []
         try:
             documents = Document.select()
-            return Utilities.convert_uuid_fields(model_to_dict(documents))
+            for document in documents:
+                all_documents \
+                    .append(Utilities.convert_unserializable_fields(model_to_dict(document)))
+            return all_documents
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             raise LookupError('Error while fetching all documents on this service')
@@ -105,6 +110,8 @@ class DocumentService:
 
         if data is None:
             raise ValueError('document data cannot be None or empty')
+
+        data['last_modified_at'] = datetime.datetime.now()
 
         try:
             updated_rows = Document.update(**data).where(Document.document_id == document_id).execute()
