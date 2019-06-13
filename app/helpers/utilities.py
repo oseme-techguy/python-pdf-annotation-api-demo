@@ -8,6 +8,7 @@ import time
 import json
 import requests
 import uuid
+from app.helpers.json_converter import JSONConverter
 
 class Utilities:
     """Utilities
@@ -18,6 +19,12 @@ class Utilities:
         """Generates a uuid - suitable for DB primary column
         """
         return uuid.uuid4().hex
+
+    @staticmethod
+    def convert_uuid_fields(json_object):
+        """Converts uuid fields in json
+        """
+        return json.loads(json.dumps(json_object, cls=JSONConverter))
 
     @staticmethod
     def decode_string(text):

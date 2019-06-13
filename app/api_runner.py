@@ -9,12 +9,34 @@ def run_api(application):
 
     web_api.add_route(application.index_webhandler, '/')
     web_api.add_route(application.login_webhandler, '/login', methods=['POST'])
-    web_api.add_route(application.get_users_webhandler, '/users/<user_id>', methods=['GET'])
+
+    # User Endpoints
+    web_api.add_route(application.get_user_webhandler, '/users/<user_id>', methods=['GET'])
     web_api.add_route(application.get_users_webhandler, '/users', methods=['GET'])
     web_api.add_route(application.create_user_webhandler, '/users', methods=['POST'])
-    # web_api.add_route(application.interactive_message_webhandler, '/im')
-    # web_api.add_route(application.init_survey_webhandler, '/users/initialise-survey/<service_id>', methods=['POST'])
-    # web_api.add_route(application.start_survey_webhandler, '/users/survey-participants')
+    web_api.add_route(application.patch_user_webhandler, '/users/<user_id>', methods=['PATCH'])
+    web_api.add_route(application.delete_user_webhandler, '/users', methods=['DELETE'])
+
+    # Document Endpoints
+    web_api.add_route(application.get_document_webhandler, '/documents/<document_id>', methods=['GET'])
+    web_api.add_route(application.get_documents_webhandler, '/documents', methods=['GET'])
+    web_api.add_route(application.create_document_webhandler, '/documents', methods=['POST'])
+    web_api.add_route(application.patch_document_webhandler, '/documents/<document_id>', methods=['PATCH'])
+    web_api.add_route(application.delete_document_webhandler, '/documents', methods=['DELETE'])
+
+    # Annotation Endpoints
+    web_api.add_route(application.get_annotation_webhandler, '/annotations/<annotation_id>', methods=['GET'])
+    web_api.add_route(application.get_annotations_webhandler, '/annotations', methods=['GET'])
+    web_api.add_route(application.create_annotation_webhandler, '/annotations', methods=['POST'])
+    web_api.add_route(application.patch_annotation_webhandler, '/annotations/<annotation_id>', methods=['PATCH'])
+    web_api.add_route(application.delete_annotation_webhandler, '/annotations', methods=['DELETE'])
+
+    # NamedEntity Endpoints
+    web_api.add_route(application.get_named_entity_webhandler, '/named-entities/<entity_id>', methods=['GET'])
+    web_api.add_route(application.get_named_entities_webhandler, '/named-entities', methods=['GET'])
+    web_api.add_route(application.create_named_entity_webhandler, '/named-entities', methods=['POST'])
+    web_api.add_route(application.patch_named_entity_webhandler, '/named-entities/<entity_id>', methods=['PATCH'])
+    web_api.add_route(application.delete_named_entity_webhandler, '/named-entities', methods=['DELETE'])
 
     web_api.run(
         host=application.config.api.host(),
