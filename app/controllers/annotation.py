@@ -67,6 +67,49 @@ class Annotation:
             'response': return_data
         })
 
+    def get_document_annotations(self, request, document_id=None):
+        """Fetches annotation(s) on the document on the service
+        - Receive and parse get request
+        - Go into AWS RDS and fetch annotation(s)
+        - Return success or not found
+        - end
+
+        Arguments:
+            request {object} -- the query parameters passed into this function
+
+        Returns:
+            object -- response from this endpoint
+        """
+
+        # query_params = request.raw_args
+        # annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
+
+        self.logger.info('Received get annotations request for document_id: {document_id}'.format(
+            document_id=(document_id if document_id is not None else '')
+        ))
+
+        try:
+            annotations = self.service.get_annotations_in_document(document_id)
+        except LookupError as error:
+            self.logger.error('Error Occurred: {error}'.format(error=error))
+            return ApiResponse.failure({
+                'message': 'Error while fetching annotation(s)',
+                'response': {}
+            }, 500)
+
+        if not annotations:
+            return ApiResponse.failure({
+                'message': 'No annotation(s) found on document',
+                'response': {}
+            }, 404)
+
+        # Return annotation object on successful login
+        return ApiResponse.success({
+            'code': 200,
+            'message': 'successfully fetched annotation(s) on document on service',
+            'response': annotations
+        })
+
 
     def add_annotions(self, request):
         """Verifies that the required fields are set in request

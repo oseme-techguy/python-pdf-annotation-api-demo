@@ -113,6 +113,7 @@ class Application(containers.DeclarativeContainer):
     """
     get_annotation_webhandler = providers.Callable(Controllers.annotation().get_annotations) # get one
     get_annotations_webhandler = providers.Callable(Controllers.annotation().get_annotations) # get all
+    get_document_annotations_webhandler = providers.Callable(Controllers.annotation().get_document_annotations) # get document annotations
     create_annotation_webhandler = providers.Callable(Controllers.annotation().add_annotions) # post
     patch_annotation_webhandler = providers.Callable(Controllers.annotation().update_annotations) # patch
     delete_annotation_webhandler = providers.Callable(Controllers.annotation().delete_annotations) # delete

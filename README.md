@@ -55,9 +55,9 @@ Setup Application        	  | /setup-application                        | setup 
 Login        	              | /login                                    | log into application (JWT)
 All Users        	          | /users                                    | all users
 All Documents        	      | /documents                                | all documents
+All Annotations        	      | /annotations                              | all annotations
 All Annotations on Document   | /documents/:documentId/annotations        | all annotations on a document
 Spacy Named Entities          | /named-entities                           | spacy named entities
-Company Buyers       	      | /companies/buyers                         | company buyers
 
   
   

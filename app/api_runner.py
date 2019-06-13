@@ -27,7 +27,8 @@ def run_api(application):
     # Annotation Endpoints
     web_api.add_route(application.get_annotation_webhandler, '/annotations/<annotation_id>', methods=['GET'])
     web_api.add_route(application.get_annotations_webhandler, '/annotations', methods=['GET'])
-    web_api.add_route(application.create_annotation_webhandler, '/annotations', methods=['POST'])
+    web_api.add_route(application.get_document_annotations_webhandler, '/documents/<document_id>/annotations', methods=['GET'])
+    web_api.add_route(application.create_annotation_webhandler, '/documents/<document_id>/annotations', methods=['POST'])
     web_api.add_route(application.patch_annotation_webhandler, '/annotations/<annotation_id>', methods=['PATCH'])
     web_api.add_route(application.delete_annotation_webhandler, '/annotations', methods=['DELETE'])
 
