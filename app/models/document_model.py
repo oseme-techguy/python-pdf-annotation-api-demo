@@ -13,13 +13,13 @@ class Document(BaseModel):
 
     ref_id = pw.UUIDField(primary_key=True, unique=True)
 
-    pdf_content = pw.TextField()
+    pdf_content = pw.TextField(null=False)
 
     user_id = pw.ForeignKeyField(User, backref='users')
 
     created_at = pw.DateTimeField(default=datetime.datetime.now)
 
-    last_modified_at = pw.DateTimeField()
+    last_modified_at = pw.DateTimeField(null=True, default=None)
 
 
     class Meta:

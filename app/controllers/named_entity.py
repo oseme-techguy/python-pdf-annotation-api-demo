@@ -1,4 +1,4 @@
-"""User Controller
+"""NamedEntity Controller
 """
 from sanic import response
 from sanic_ipware import get_client_ip
@@ -9,85 +9,18 @@ import time # used to control pausing of the consumer
 import datetime
 import json
 
-class User:
-    """User Controller"""
+class NamedEntity:
+    """NamedEntity Controller"""
 
     def __init__(self, logger=None, service=None):
         self.logger = logger
         self.service = service
 
-    def login(self, request):
-        """Logs in the user into this application
+
+    def get_entities(self, request, entity_id=None):
+        """Fetches named_entity(s) on the service
         - Receive and parse get request
-        - Verify that the user is valid on the service
-        - Go into AWS RDS and fetch user details and verify
-        - Return success or unauthorized
-        - end
-
-        Arguments:
-            request {object} -- the query parameters passed into this function
-
-        Returns:
-            object -- response from this endpoint
-        """
-
-        request_body = request.body
-        body_params = {}
-        if request_body != b'':
-            body_params = json.loads(request_body)
-
-        self.logger.info('Received user login request: {params}'.format(
-            params=body_params
-        ))
-
-        if not body_params.keys():
-            return ApiResponse.failure({
-                'message':'username and password is required to log into application',
-                'response':{}
-            }, 400)
-
-        username = body_params['username'] if 'username' in body_params else None
-        password = body_params['password'] if 'password' in body_params else None
-
-        if username is None or password is None:
-            return ApiResponse.failure({
-                'message':'username and password is required to log into application',
-                'response': {}
-            }, 400)
-
-        try:
-            user = self.service.login(username, password)
-        except LookupError as error:
-            self.logger.error('Error Occurred: {error}'.format(error=error))
-            return ApiResponse.failure({
-                'message': 'You are not authorized to login',
-                'response': {}
-            }, 401)
-
-        if user is None:
-            return ApiResponse.failure({
-                'message': 'You are not authorized to login',
-                'response': {}
-            }, 401)
-
-        last_login_time = datetime.datetime.now() #.strftime("%Y-%m-%d %H:%M:%S")
-        # pylint: disable=unused-variable,invalid-name
-        ip, routable = get_client_ip(request)
-        if ip is not None:
-            # update the ip_address here for user
-            pass
-
-        # Return user object on successful login
-        return ApiResponse.success({
-            'code': 200,
-            'message': 'successfully logged in',
-            'response': user
-        })
-
-    def get_users(self, request, user_id=None):
-        """Fetches user(s) on the service
-        - Receive and parse get request
-        - Go into AWS RDS and fetch user(s)
+        - Go into AWS RDS and fetch named_entity(s)
         - Return success or not found
         - end
 
@@ -99,49 +32,49 @@ class User:
         """
 
         # query_params = request.raw_args
-        # user_id = query_params['user_id'] if 'user_id' in query_params else None
+        # entity_id = query_params['entity_id'] if 'entity_id' in query_params else None
 
-        self.logger.info('Received get user request for id: {user_id}'.format(
-            user_id=(user_id if user_id is not None else '')
+        self.logger.info('Received get named_entity request for id: {entity_id}'.format(
+            entity_id=(entity_id if entity_id is not None else '')
         ))
 
-        user = None
-        users = {}
+        named_entity = None
+        named_entities = {}
         try:
-            if user_id is None:
-                users = self.service.get_users()
+            if entity_id is None:
+                named_entities = self.service.get_users()
             else:
-                user = self.service.get_user(user_id)
+                named_entity = self.service.get_user(entity_id)
         except LookupError as error:
             self.logger.error('Error Occurred: {error}'.format(error=error))
             return ApiResponse.failure({
-                'message': 'Error while fetching user(s)',
+                'message': 'Error while fetching named_entity(s)',
                 'response': {}
             }, 500)
 
-        if not users and user is None:
+        if not named_entities and named_entity is None:
             return ApiResponse.failure({
-                'message': 'No user(s) found',
+                'message': 'No named_entity(s) found',
                 'response': {}
             }, 404)
 
-        return_data = user if user is not None else users
+        return_data = named_entity if named_entity is not None else named_entities
         print(return_data)
 
-        # Return user object on successful login
+        # Return named_entity object on successful login
         return ApiResponse.success({
             'code': 200,
-            'message': 'successfully fetched user(s) on service',
+            'message': 'successfully fetched named_entity(s) on service',
             'response': return_data
         })
 
 
-    def add_users(self, request):
+    def add_entities(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get request
         - commit model to db
         - colse db connection
-        - Return created user object
+        - Return created named_entity object
         - end
 
         Arguments:
@@ -156,13 +89,13 @@ class User:
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        self.logger.info('Received create user request: {params}'.format(
+        self.logger.info('Received create named_entity request: {params}'.format(
             params=body_params
         ))
 
         if not body_params.keys():
             return ApiResponse.failure({
-                'message':'user data cannot be null',
+                'message':'named_entity data cannot be null',
                 'response':{}
             }, 400)
 
@@ -186,35 +119,35 @@ class User:
             user_data['role'] = 0
 
         try:
-            user = self.service.add_user(user_data)
+            named_entity = self.service.add_user(user_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while adding the new user. ' +
+                'message': 'Error occured while adding the new named_entity. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
 
-        if user is None:
+        if named_entity is None:
             return ApiResponse.failure({
-                'message': 'An error occured while adding the new user',
+                'message': 'An error occured while adding the new named_entity',
                 'response': {}
             }, 500)
 
-        # Return user object on successful login
+        # Return named_entity object on successful login
         return ApiResponse.success({
             'code': 201,
-            'message': 'user was successfully created',
-            'response': user
+            'message': 'named_entity was successfully created',
+            'response': named_entity
         }, 201)
 
 
-    def update_users(self, request):
+    def update_entities(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - update model within db
         - close db connection
-        - Return updated user object
+        - Return updated named_entity object
         - end
 
         Arguments:
@@ -230,21 +163,21 @@ class User:
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        user_id = query_params['user_id'] if 'user_id' in query_params else None
-        if user_id is None or user_id is None:
+        entity_id = query_params['entity_id'] if 'entity_id' in query_params else None
+        if entity_id is None or entity_id is None:
             return ApiResponse.failure({
-                'message': 'Kindly pass the user_id of the user to patch',
+                'message': 'Kindly pass the entity_id of the named_entity to patch',
                 'response': {}
             }, 400)
 
-        self.logger.info('Received update user request for id: {user_id} // : {params}'.format(
-            user_id=user_id,
+        self.logger.info('Received update named_entity request for id: {entity_id} // : {params}'.format(
+            entity_id=entity_id,
             params=body_params
         ))
 
         if not body_params.keys():
             return ApiResponse.failure({
-                'message':'user data cannot be null',
+                'message':'named_entity data cannot be null',
                 'response':{}
             }, 400)
 
@@ -264,33 +197,33 @@ class User:
             user_data['role'] = 0
 
         try:
-            user = self.service.update_user(user_id, user_data)
+            named_entity = self.service.update_user(entity_id, user_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the user. ' +
+                'message': 'Error occured while updating the named_entity. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
 
-        if user is None:
+        if named_entity is None:
             return ApiResponse.failure({
-                'message': 'An error occured while updating the user',
+                'message': 'An error occured while updating the named_entity',
                 'response': {}
             }, 500)
 
-        # User has been successfully updated
+        # NamedEntity has been successfully updated
         return ApiResponse.success({
             'code': 200,
-            'message': 'user was successfully updated',
-            'response': user
+            'message': 'named_entity was successfully updated',
+            'response': named_entity
         }, 200)
 
 
-    def delete_users(self, request):
+    def delete_entities(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
-        - delete user where user_id in db
+        - delete named_entity where entity_id in db
         - close db connection
         - Return successful or failed
         - end
@@ -303,37 +236,37 @@ class User:
         """
 
         query_params = request.raw_args
-        user_id = query_params['user_id'] if 'user_id' in query_params else None
+        entity_id = query_params['entity_id'] if 'entity_id' in query_params else None
 
-        if user_id is None or user_id is None:
+        if entity_id is None or entity_id is None:
             return ApiResponse.failure({
-                'message': 'Kindly pass the user_id of the user to patch',
+                'message': 'Kindly pass the entity_id of the named_entity to patch',
                 'response': {}
             }, 400)
 
-        self.logger.info('Received delete user request for id: {user_id}'.format(
-            user_id=user_id
+        self.logger.info('Received delete named_entity request for id: {entity_id}'.format(
+            entity_id=entity_id
         ))
 
         try:
-            is_deleted = self.service.delete_user(user_id)
+            is_deleted = self.service.delete_user(entity_id)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the user. ' +
+                'message': 'Error occured while updating the named_entity. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
 
         if is_deleted is False:
             return ApiResponse.failure({
-                'message': 'An error occured while deleting the user',
+                'message': 'An error occured while deleting the named_entity',
                 'response': {}
             }, 500)
 
-        # User has been successfully updated
+        # NamedEntity has been successfully updated
         return ApiResponse.success({
             'code': 204,
-            'message': 'user was successfully deleted',
+            'message': 'named_entity was successfully deleted',
             'response': {}
         }, 204)

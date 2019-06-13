@@ -1,4 +1,4 @@
-"""User Controller
+"""Annotation Controller
 """
 from sanic import response
 from sanic_ipware import get_client_ip
@@ -9,85 +9,17 @@ import time # used to control pausing of the consumer
 import datetime
 import json
 
-class User:
-    """User Controller"""
+class Annotation:
+    """Annotation Controller"""
 
     def __init__(self, logger=None, service=None):
         self.logger = logger
         self.service = service
 
-    def login(self, request):
-        """Logs in the user into this application
+    def get_annotations(self, request, annotation_id=None):
+        """Fetches annotation(s) on the service
         - Receive and parse get request
-        - Verify that the user is valid on the service
-        - Go into AWS RDS and fetch user details and verify
-        - Return success or unauthorized
-        - end
-
-        Arguments:
-            request {object} -- the query parameters passed into this function
-
-        Returns:
-            object -- response from this endpoint
-        """
-
-        request_body = request.body
-        body_params = {}
-        if request_body != b'':
-            body_params = json.loads(request_body)
-
-        self.logger.info('Received user login request: {params}'.format(
-            params=body_params
-        ))
-
-        if not body_params.keys():
-            return ApiResponse.failure({
-                'message':'username and password is required to log into application',
-                'response':{}
-            }, 400)
-
-        username = body_params['username'] if 'username' in body_params else None
-        password = body_params['password'] if 'password' in body_params else None
-
-        if username is None or password is None:
-            return ApiResponse.failure({
-                'message':'username and password is required to log into application',
-                'response': {}
-            }, 400)
-
-        try:
-            user = self.service.login(username, password)
-        except LookupError as error:
-            self.logger.error('Error Occurred: {error}'.format(error=error))
-            return ApiResponse.failure({
-                'message': 'You are not authorized to login',
-                'response': {}
-            }, 401)
-
-        if user is None:
-            return ApiResponse.failure({
-                'message': 'You are not authorized to login',
-                'response': {}
-            }, 401)
-
-        last_login_time = datetime.datetime.now() #.strftime("%Y-%m-%d %H:%M:%S")
-        # pylint: disable=unused-variable,invalid-name
-        ip, routable = get_client_ip(request)
-        if ip is not None:
-            # update the ip_address here for user
-            pass
-
-        # Return user object on successful login
-        return ApiResponse.success({
-            'code': 200,
-            'message': 'successfully logged in',
-            'response': user
-        })
-
-    def get_users(self, request, user_id=None):
-        """Fetches user(s) on the service
-        - Receive and parse get request
-        - Go into AWS RDS and fetch user(s)
+        - Go into AWS RDS and fetch annotation(s)
         - Return success or not found
         - end
 
@@ -99,49 +31,49 @@ class User:
         """
 
         # query_params = request.raw_args
-        # user_id = query_params['user_id'] if 'user_id' in query_params else None
+        # annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
 
-        self.logger.info('Received get user request for id: {user_id}'.format(
-            user_id=(user_id if user_id is not None else '')
+        self.logger.info('Received get annotation request for id: {annotation_id}'.format(
+            annotation_id=(annotation_id if annotation_id is not None else '')
         ))
 
-        user = None
-        users = {}
+        annotation = None
+        annotations = {}
         try:
-            if user_id is None:
-                users = self.service.get_users()
+            if annotation_id is None:
+                annotations = self.service.get_users()
             else:
-                user = self.service.get_user(user_id)
+                annotation = self.service.get_user(annotation_id)
         except LookupError as error:
             self.logger.error('Error Occurred: {error}'.format(error=error))
             return ApiResponse.failure({
-                'message': 'Error while fetching user(s)',
+                'message': 'Error while fetching annotation(s)',
                 'response': {}
             }, 500)
 
-        if not users and user is None:
+        if not annotations and annotation is None:
             return ApiResponse.failure({
-                'message': 'No user(s) found',
+                'message': 'No annotation(s) found',
                 'response': {}
             }, 404)
 
-        return_data = user if user is not None else users
+        return_data = annotation if annotation is not None else annotations
         print(return_data)
 
-        # Return user object on successful login
+        # Return annotation object on successful login
         return ApiResponse.success({
             'code': 200,
-            'message': 'successfully fetched user(s) on service',
+            'message': 'successfully fetched annotation(s) on service',
             'response': return_data
         })
 
 
-    def add_users(self, request):
+    def add_annotions(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get request
         - commit model to db
         - colse db connection
-        - Return created user object
+        - Return created annotation object
         - end
 
         Arguments:
@@ -156,13 +88,13 @@ class User:
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        self.logger.info('Received create user request: {params}'.format(
+        self.logger.info('Received create annotation request: {params}'.format(
             params=body_params
         ))
 
         if not body_params.keys():
             return ApiResponse.failure({
-                'message':'user data cannot be null',
+                'message':'annotation data cannot be null',
                 'response':{}
             }, 400)
 
@@ -186,35 +118,35 @@ class User:
             user_data['role'] = 0
 
         try:
-            user = self.service.add_user(user_data)
+            annotation = self.service.add_user(user_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while adding the new user. ' +
+                'message': 'Error occured while adding the new annotation. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
 
-        if user is None:
+        if annotation is None:
             return ApiResponse.failure({
-                'message': 'An error occured while adding the new user',
+                'message': 'An error occured while adding the new annotation',
                 'response': {}
             }, 500)
 
-        # Return user object on successful login
+        # Return annotation object on successful login
         return ApiResponse.success({
             'code': 201,
-            'message': 'user was successfully created',
-            'response': user
+            'message': 'annotation was successfully created',
+            'response': annotation
         }, 201)
 
 
-    def update_users(self, request):
+    def update_annotations(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
         - update model within db
         - close db connection
-        - Return updated user object
+        - Return updated annotation object
         - end
 
         Arguments:
@@ -230,21 +162,21 @@ class User:
         if request_body != b'':
             body_params = json.loads(request_body)
 
-        user_id = query_params['user_id'] if 'user_id' in query_params else None
-        if user_id is None or user_id is None:
+        annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
+        if annotation_id is None or annotation_id is None:
             return ApiResponse.failure({
-                'message': 'Kindly pass the user_id of the user to patch',
+                'message': 'Kindly pass the annotation_id of the annotation to patch',
                 'response': {}
             }, 400)
 
-        self.logger.info('Received update user request for id: {user_id} // : {params}'.format(
-            user_id=user_id,
+        self.logger.info('Received update annotation request for id: {annotation_id} // : {params}'.format(
+            annotation_id=annotation_id,
             params=body_params
         ))
 
         if not body_params.keys():
             return ApiResponse.failure({
-                'message':'user data cannot be null',
+                'message':'annotation data cannot be null',
                 'response':{}
             }, 400)
 
@@ -264,33 +196,33 @@ class User:
             user_data['role'] = 0
 
         try:
-            user = self.service.update_user(user_id, user_data)
+            annotation = self.service.update_user(annotation_id, user_data)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the user. ' +
+                'message': 'Error occured while updating the annotation. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
 
-        if user is None:
+        if annotation is None:
             return ApiResponse.failure({
-                'message': 'An error occured while updating the user',
+                'message': 'An error occured while updating the annotation',
                 'response': {}
             }, 500)
 
-        # User has been successfully updated
+        # Annotation has been successfully updated
         return ApiResponse.success({
             'code': 200,
-            'message': 'user was successfully updated',
-            'response': user
+            'message': 'annotation was successfully updated',
+            'response': annotation
         }, 200)
 
 
-    def delete_users(self, request):
+    def delete_annotations(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
-        - delete user where user_id in db
+        - delete annotation where annotation_id in db
         - close db connection
         - Return successful or failed
         - end
@@ -303,37 +235,37 @@ class User:
         """
 
         query_params = request.raw_args
-        user_id = query_params['user_id'] if 'user_id' in query_params else None
+        annotation_id = query_params['annotation_id'] if 'annotation_id' in query_params else None
 
-        if user_id is None or user_id is None:
+        if annotation_id is None or annotation_id is None:
             return ApiResponse.failure({
-                'message': 'Kindly pass the user_id of the user to patch',
+                'message': 'Kindly pass the annotation_id of the annotation to patch',
                 'response': {}
             }, 400)
 
-        self.logger.info('Received delete user request for id: {user_id}'.format(
-            user_id=user_id
+        self.logger.info('Received delete annotation request for id: {annotation_id}'.format(
+            annotation_id=annotation_id
         ))
 
         try:
-            is_deleted = self.service.delete_user(user_id)
+            is_deleted = self.service.delete_user(annotation_id)
         except Exception as err:
             self.logger.error('Error Occurred: {error}'.format(error=err))
             return ApiResponse.failure({
-                'message': 'Error occured while updating the user. ' +
+                'message': 'Error occured while updating the annotation. ' +
                            'Error: {error}'.format(error=err),
                 'response': {}
             }, 500)
 
         if is_deleted is False:
             return ApiResponse.failure({
-                'message': 'An error occured while deleting the user',
+                'message': 'An error occured while deleting the annotation',
                 'response': {}
             }, 500)
 
-        # User has been successfully updated
+        # Annotation has been successfully updated
         return ApiResponse.success({
             'code': 204,
-            'message': 'user was successfully deleted',
+            'message': 'annotation was successfully deleted',
             'response': {}
         }, 204)

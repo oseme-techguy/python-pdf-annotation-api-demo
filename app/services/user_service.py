@@ -31,10 +31,12 @@ class UserService:
         """
 
         if username is None:
-            raise LookupError('the username cannot be None')
+            raise ValueError('the username cannot be None')
 
         if password is None:
-            raise LookupError('the password cannot be None')
+            raise ValueError('the password cannot be None')
+
+        # Todo: finish up the login
 
         return None
 
@@ -48,6 +50,16 @@ class UserService:
         Returns:
             dict -- the user object or an None
         """
+        if user_id is None:
+            raise ValueError('id of user to fetch cannot be None')
+
+        try:
+            user = User.select().where(User.user_id == str(user_id)).get()
+            return Utilities.convert_uuid_fields(model_to_dict(user))
+        except Exception as err:
+            self.logger.error('Error Occurred: {error}'.format(error=err))
+            raise LookupError('User does not exists on this service')
+
         return None
 
 
@@ -61,6 +73,14 @@ class UserService:
         Returns:
             List -- the list of user objects or an empty list
         """
+
+        try:
+            users = User.select()
+            return Utilities.convert_uuid_fields(model_to_dict(users))
+        except Exception as err:
+            self.logger.error('Error Occurred: {error}'.format(error=err))
+            raise LookupError('Error while fetching all users on this service')
+
         return {}
 
 
@@ -76,7 +96,7 @@ class UserService:
         """
 
         if data is None:
-            raise LookupError('user data cannot be None or empty')
+            raise ValueError('user data cannot be None or empty')
 
         if user_id is None:
             user_id = Utilities.generate_id() # generate an uuid for this record
@@ -86,8 +106,8 @@ class UserService:
         try:
             saved_user = User.create(**data)
             return model_to_dict(saved_user)
-        except Exception as e:
-            self.logger.error('Error Occurred: {error}'.format(error=e))
+        except Exception as err:
+            self.logger.error('Error Occurred: {error}'.format(error=err))
             raise ValueError('Unable to save the user object')
 
         return None
@@ -105,12 +125,19 @@ class UserService:
         """
 
         if user_id is None:
-            raise LookupError('user id to update cannot be None')
+            raise ValueError('user id to update cannot be None')
 
         if data is None:
-            raise LookupError('user data cannot be None or empty')
+            raise ValueError('user data cannot be None or empty')
 
-        return None
+        try:
+            updated_rows = User.update(**data).where(User.user_id == user_id).execute()
+            return updated_rows > 0
+        except Exception as err:
+            self.logger.error('Error Occurred: {error}'.format(error=err))
+            raise LookupError('Update Error: User does not exists on this service')
+
+        return False
 
     def delete_user(self, user_id=None):
         """Deletes the user with the user_id from this service.
@@ -123,6 +150,13 @@ class UserService:
         """
 
         if user_id is None:
-            raise LookupError('if of user to delete cannot be None')
+            raise ValueError('id of user to delete cannot be None')
+
+        try:
+            deleted_rows = User.delete().where(User.user_id == user_id).execute()
+            return deleted_rows > 0
+        except Exception as err:
+            self.logger.error('Error Occurred: {error}'.format(error=err))
+            raise LookupError('User does not exists on this service')
 
         return False
