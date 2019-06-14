@@ -1,7 +1,10 @@
 """User Controller
 """
 
+from sanic import Sanic
 from sanic import response
+from sanic_jwt import exceptions
+from sanic_jwt import protected
 from sanic_ipware import get_client_ip
 from app.helpers import ApiResponse
 from app.helpers.utilities import Utilities
@@ -10,14 +13,20 @@ import time # used to control pausing of the consumer
 import datetime
 import json
 
+from app.config.application import Application
+
+
+
 class User:
     """User Controller"""
+
+    app = Application().webapi()
 
     def __init__(self, logger=None, service=None):
         self.logger = logger
         self.service = service
 
-    def login(self, request):
+    async def login(self, request, *args, **kwargs):
         """Logs in the user into this application
         - Receive and parse get request
         - Verify that the user is valid on the service
@@ -41,35 +50,20 @@ class User:
             params=body_params
         ))
 
-        if not body_params.keys():
-            return ApiResponse.failure({
-                'message':'username and password is required to log into application',
-                'response':{}
-            }, 400)
+        username = request.json.get("username", None)
+        password = request.json.get("password", None)
 
-        username = body_params['username'] if 'username' in body_params else None
-        password = body_params['password'] if 'password' in body_params else None
-
-        if username is None or password is None:
-            return ApiResponse.failure({
-                'message':'username and password is required to log into application',
-                'response': {}
-            }, 400)
+        if not username or not password:
+            raise exceptions.AuthenticationFailed("Missing username or password.")
 
         try:
             user = self.service.login(username, password)
         except LookupError as error:
             self.logger.error('Error Occurred: {error}'.format(error=error))
-            return ApiResponse.failure({
-                'message': 'You are not authorized to login',
-                'response': {}
-            }, 401)
+            raise exceptions.AuthenticationFailed("You are not authorized to login.")
 
         if user is None:
-            return ApiResponse.failure({
-                'message': 'You are not authorized to login',
-                'response': {}
-            }, 401)
+            raise exceptions.AuthenticationFailed("You are not authorized to login.")
 
         last_login_time = datetime.datetime.now() #.strftime("%Y-%m-%d %H:%M:%S")
         # pylint: disable=unused-variable,invalid-name
@@ -78,14 +72,10 @@ class User:
             # update the ip_address here for user
             pass
 
-        # Return user object on successful login
-        return ApiResponse.success({
-            'code': 200,
-            'message': 'successfully logged in',
-            'response': user
-        })
+        return user
 
-
+    @app.route("/sample", methods=['GET'])
+    @protected()
     def get_users(self, request, user_id=None):
         """Fetches user(s) on the service
         - Receive and parse get request
@@ -136,7 +126,7 @@ class User:
             'response': return_data
         })
 
-
+    # @protected()
     def add_users(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get request
@@ -209,7 +199,7 @@ class User:
             'response': user
         }, 201)
 
-
+    # @protected()
     def update_users(self, request, user_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
@@ -287,7 +277,7 @@ class User:
             'response': user
         }, 200)
 
-
+    # @protected()
     def delete_users(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request

@@ -1,19 +1,22 @@
 """PDF Annotation API - runner."""
 
-def run_api(application):
+from sanic_jwt import initialize
+
+def run_api(application, user_controller):
     """Run the web application API
     Arguments:
         application -- The injected application
     """
-    web_api = application.webapi()
+    web_api = application.webapi
+    initialize(web_api, authenticate=user_controller().login)
 
     web_api.add_route(application.index_webhandler, '/')
-    web_api.add_route(application.login_webhandler, '/login', methods=['POST'])
+    # web_api.add_route(application.login_webhandler, '/login', methods=['POST'])
 
     # User Endpoints
     web_api.add_route(application.get_user_webhandler, '/users/<user_id>', methods=['GET'])
-    web_api.add_route(application.get_users_webhandler, '/users', methods=['GET'])
-    web_api.add_route(application.create_user_webhandler, '/users', methods=['POST'])
+    # web_api.add_route(application.get_users_webhandler, '/users', methods=['GET'])
+    # web_api.add_route(application.create_user_webhandler, '/users', methods=['POST'])
     web_api.add_route(application.patch_user_webhandler, '/users/<user_id>', methods=['PATCH'])
     web_api.add_route(application.delete_user_webhandler, '/users', methods=['DELETE'])
 

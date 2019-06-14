@@ -1,6 +1,6 @@
 """PDF Annotation API"""
 
-from app.config.di import Application
-from app.api_runner import run_api
+from app.config.application import Application
+from app.config.di import Controllers
 
-__all__ = ('Application', 'run_api')
+__all__ = ('Application', 'Controllers')
