@@ -22,7 +22,6 @@ pylint = "*"
 [scripts]
 lint = "pylint --rcfile=.pylintrc api.py app"
 api = "python3 api.py"
-consumers = "python3 consumers.py"
 
 [requires]
 python_version = "3.7"
