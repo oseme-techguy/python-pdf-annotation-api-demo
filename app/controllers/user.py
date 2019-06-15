@@ -4,7 +4,6 @@
 from sanic import Sanic
 from sanic import response
 from sanic_jwt import exceptions
-from sanic_jwt import protected
 from sanic_ipware import get_client_ip
 from app.helpers import ApiResponse
 from app.helpers.utilities import Utilities
@@ -13,14 +12,9 @@ import time # used to control pausing of the consumer
 import datetime
 import json
 
-from app.config.application import Application
-
-
 
 class User:
     """User Controller"""
-
-    app = Application().webapi()
 
     def __init__(self, logger=None, service=None):
         self.logger = logger
@@ -74,8 +68,6 @@ class User:
 
         return user
 
-    @app.route("/sample", methods=['GET'])
-    @protected()
     def get_users(self, request, user_id=None):
         """Fetches user(s) on the service
         - Receive and parse get request

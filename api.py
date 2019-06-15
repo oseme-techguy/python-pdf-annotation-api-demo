@@ -1,8 +1,13 @@
 """PDF Annotation API application - entrypoint."""
 
-from app import webhandlers
-from app import Application, Controllers#, run_api
+from sanic_jwt import protected
 from sanic_jwt import initialize
+from app import Application, Controllers
+from app.routes import index
+from app.routes import users
+from app.routes import documents
+from app.routes import annotations
+from app.routes import named_entities
 
 
 def run_api(application, app_controllers=None):
@@ -13,50 +18,14 @@ def run_api(application, app_controllers=None):
     web_api = application.webapi()
     initialize(
         web_api,
-        authenticate=app_controllers.user().login,
-        path_to_authenticate='/login'
+        authenticate=app_controllers.user().login
     )
 
-    web_api.add_route(webhandlers.index, '/')
-
-    """
-        Users Endpoint
-    """
-    # web_api.add_route(app_controllers.user().login, '/login', methods=['POST']) # Login
-    web_api.add_route(app_controllers.user().get_users, '/users/<user_id>', methods=['GET']) # get one
-    web_api.add_route(app_controllers.user().get_users, '/users', methods=['GET']) # get all
-    web_api.add_route(app_controllers.user().add_users, '/users', methods=['POST']) # add user
-    web_api.add_route(app_controllers.user().update_users, '/users/<user_id>', methods=['PATCH']) # patch user
-    web_api.add_route(app_controllers.user().delete_users, '/users', methods=['DELETE']) # delete user
-
-
-    """
-        Documents Endpoint
-    """
-    web_api.add_route(app_controllers.document().get_documents, '/documents/<document_id>', methods=['GET']) # get one
-    web_api.add_route(app_controllers.document().get_documents, '/documents', methods=['GET']) # get all
-    web_api.add_route(app_controllers.document().upload_documents, '/documents', methods=['POST']) # upload document
-    web_api.add_route(app_controllers.document().update_documents, '/documents/<document_id>', methods=['PATCH']) # patch
-    web_api.add_route(app_controllers.document().delete_documents, '/documents', methods=['DELETE']) # delete
-
-    """
-        Annotations Endpoint
-    """
-    web_api.add_route(app_controllers.annotation().get_annotations, '/annotations/<annotation_id>', methods=['GET'])
-    web_api.add_route(app_controllers.annotation().get_annotations, '/annotations', methods=['GET'])
-    web_api.add_route(app_controllers.annotation().get_document_annotations, '/documents/<document_id>/annotations', methods=['GET'])
-    web_api.add_route(app_controllers.annotation().add_annotions, '/documents/<document_id>/annotations', methods=['POST'])
-    web_api.add_route(app_controllers.annotation().update_annotations, '/annotations/<annotation_id>', methods=['PATCH'])
-    web_api.add_route(app_controllers.annotation().delete_annotations, '/annotations', methods=['DELETE'])
-
-    """
-        Named Entities Endpoint
-    """
-    web_api.add_route(app_controllers.named_entity().get_entities, '/named-entities/<entity_id>', methods=['GET'])
-    web_api.add_route(app_controllers.named_entity().get_entities, '/named-entities', methods=['GET'])
-    web_api.add_route(app_controllers.named_entity().add_entities, '/named-entities', methods=['POST'])
-    web_api.add_route(app_controllers.named_entity().update_entities, '/named-entities/<entity_id>', methods=['PATCH'])
-    web_api.add_route(app_controllers.named_entity().delete_entities, '/named-entities', methods=['DELETE'])
+    web_api.add_route(index, '/')
+    users.set_user_routes(web_api, app_controllers.user())
+    documents.set_document_routes(web_api, app_controllers.document())
+    annotations.set_annotation_routes(web_api, app_controllers.annotation())
+    named_entities.set_named_entities_routes(web_api, app_controllers.named_entity())
 
     web_api.run(
         host=application.config.api.host(),

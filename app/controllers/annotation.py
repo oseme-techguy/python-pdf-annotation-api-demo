@@ -109,7 +109,7 @@ class Annotation:
         })
 
 
-    def add_annotions(self, request):
+    def add_annotations(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get request
         - commit model to db
