@@ -1,10 +1,10 @@
 sudo: required
 services:
-  – docker
+  - docker
 language: python
 install:
   - pip install pipenv
-  – pipenv install
+  - pipenv install
 # command to run tests
 # script:
 # unit test
@@ -12,4 +12,4 @@ install:
 # linting test
 # – flake8
 after_success:
-  – sh .travis/deploy_dockerhub.sh
+  - sh .travis/deploy_dockerhub.sh
