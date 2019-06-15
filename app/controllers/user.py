@@ -8,7 +8,7 @@ from sanic_ipware import get_client_ip
 from app.helpers import ApiResponse
 from app.helpers.utilities import Utilities
 from app.config.settings import SETTINGS
-import time # used to control pausing of the consumer
+import time
 import datetime
 import json
 
