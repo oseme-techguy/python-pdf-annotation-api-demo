@@ -8,6 +8,7 @@ SETTINGS = {
     'api':{
         'port': environ.get('API_PORT'),
         'host': environ.get('API_HOST'),
+        'jwt_secret': 'Secret String' if not environ.get('API_JWT_SECRET') else environ.get('API_JWT_SECRET'),
         'debug': True if environ.get('ENVIRONMENT') != 'production' else False
     },
     'sql': {

@@ -11,4 +11,3 @@ class Sql:
 
     def get_model_instance(self):
         return self.sql_model
-

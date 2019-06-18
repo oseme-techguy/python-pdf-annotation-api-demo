@@ -1,8 +1,9 @@
 """PDF Annotation API application - entrypoint."""
 
 from sanic_jwt import protected
-from sanic_jwt import initialize
+from sanic_jwt import Initialize
 from app import Application, Controllers
+from app.config.settings import SETTINGS
 from app.routes import index
 from app.routes import users
 from app.routes import documents
@@ -16,9 +17,13 @@ def run_api(application, app_controllers=None):
         application -- The injected application
     """
     web_api = application.webapi()
-    initialize(
+    Initialize(
         web_api,
-        authenticate=app_controllers.user().login
+        debug=SETTINGS['api']['debug'],
+        secret=SETTINGS['api']['jwt_secret'],
+        authenticate=app_controllers.user().login,
+        add_scopes_to_payload=app_controllers.user().add_user_roles_to_payload,
+        retrieve_user=app_controllers.user().get_logged_in_user
     )
 
     web_api.add_route(index, '/')

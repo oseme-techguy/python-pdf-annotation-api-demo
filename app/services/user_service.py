@@ -38,6 +38,12 @@ class UserService:
             raise ValueError('the password cannot be None')
 
         # Todo: finish up the login
+        try:
+            user = User.select().where(User.username == str(username)).get()
+            return Utilities.convert_unserializable_fields(model_to_dict(user))
+        except Exception as err:
+            self.logger.error('Error Occurred: {error}'.format(error=err))
+            raise LookupError('User does not exists on this service')
 
         return None
 

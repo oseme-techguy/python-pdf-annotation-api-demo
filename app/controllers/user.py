@@ -68,6 +68,40 @@ class User:
 
         return user
 
+    async def add_user_roles_to_payload(self, user):
+        """Enriches the payload with the user's scopes/role
+
+        Arguments:
+            user {object} -- the user object
+
+        Returns:
+            object {list} -- the scopes for the user
+        """
+        role = 'analyst' if user['role'] == 0  else 'manager' # 0 - Analysts, 1 - Managers
+        return [role]
+
+    async def get_logged_in_user(self, request, payload, *args, **kwargs):
+        """Retrieves the profile for the logged in user
+
+        Arguments:
+            request {object} -- the request object
+            payload {object} -- the payload
+            args {object} -- the args
+            kwargs {object} -- the kwargs
+
+        Returns:
+            object -- response from this endpoint
+        """
+        if payload:
+            user_id = payload.get('user_id', None)
+            try:
+                return self.service.get_user(user_id)
+            except LookupError as error:
+                self.logger \
+                    .error('Error Occurred while fetching profile: {error}'.format(error=error))
+                return None
+        return None
+
     def get_users(self, request, user_id=None):
         """Fetches user(s) on the service
         - Receive and parse get request
@@ -111,14 +145,13 @@ class User:
 
         return_data = user if user is not None else users
 
-        # Return user object on successful login
+        # Return users
         return ApiResponse.success({
             'code': 200,
             'message': 'successfully fetched user(s) on service',
             'response': return_data
         })
 
-    # @protected()
     def add_users(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get request
@@ -191,7 +224,6 @@ class User:
             'response': user
         }, 201)
 
-    # @protected()
     def update_users(self, request, user_id=None):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
@@ -269,7 +301,6 @@ class User:
             'response': user
         }, 200)
 
-    # @protected()
     def delete_users(self, request):
         """Verifies that the required fields are set in request
         - open db connection and parse get/post request
