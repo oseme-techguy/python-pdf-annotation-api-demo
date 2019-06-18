@@ -31,7 +31,8 @@ Make sure you have python3 installed on the machine.
 
 > **Steps:**
 > - Set environment variables as stipulated in table below in the section **```Environment Variables```**
-> - ```npm start```
+> - ```pipenv install```
+> > - ```pipenv run api```
 > - Check base at http://{{service_base_url}}
 
 ----------
@@ -40,7 +41,7 @@ Make sure you have python3 installed on the machine.
 Extra
 --------------------
 > **Tip:** You can change the application's configurable items 
-in the ```config/config.js``` file at the project root alongside 
+in the ```config/settings.py``` file at the project root alongside 
 other configurable items. 
 
 
