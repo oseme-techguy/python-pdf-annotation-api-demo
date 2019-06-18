@@ -31,8 +31,11 @@ Make sure you have python3 installed on the machine.
 
 > **Steps:**
 > - Set environment variables as stipulated in table below in the section **```Environment Variables```**
-> - ```pipenv install```
-> > - ```pipenv run api```
+> - Make sure you have pip installed
+> - Run ```pip install pipenv==2018.6.25```
+> - Then Run ```pip install pip==18.0```
+> - then run ```pipenv install```
+> - And finally to run the api, run: ```pipenv run api```
 > - Check base at http://{{service_base_url}}
 
 ----------
