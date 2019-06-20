@@ -85,8 +85,8 @@ See API documentation in Postman collection.
 Item     					| Value
 --------------------------- | ---------------------------
 ENVIRONMENT     			| (development, production, staging)
-HOST     			    | Host for api to run on
-PORT     			    | Port for app to run on
+HOST     			        | Host for api to run on
+PORT     			        | Port for app to run on
 AWS_RDS_CONNECTION_URI 	    | Database full connection uri(this takes priority if not empty)
 AWS_RDS_HOST 			    | Database host
 AWS_RDS_PORT      	        | Database Port Number
