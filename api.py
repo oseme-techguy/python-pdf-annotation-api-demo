@@ -2,6 +2,7 @@
 
 from sanic_jwt import protected
 from sanic_jwt import Initialize
+from sanic_cors import CORS, cross_origin
 from app import Application, Controllers
 from app.config.settings import SETTINGS
 from app.routes import index
@@ -17,6 +18,7 @@ def run_api(application, app_controllers=None):
         application -- The injected application
     """
     web_api = application.webapi()
+    CORS(web_api, automatic_options=True) # set CORS on app
     Initialize(
         web_api,
         debug=SETTINGS['api']['debug'],

@@ -13,6 +13,8 @@ class Document(BaseModel):
 
     ref_id = pw.UUIDField(primary_key=True, unique=True)
 
+    name = pw.CharField(unique=True)
+
     pdf_content = pw.TextField(null=False)
 
     user_id = pw.ForeignKeyField(User, backref='users')

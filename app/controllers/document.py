@@ -59,7 +59,6 @@ class Document:
             }, 404)
 
         return_data = document if document is not None else documents
-        print(return_data)
 
         # Return document object on successful login
         return ApiResponse.success({
@@ -99,10 +98,13 @@ class Document:
                 'response':{}
             }, 400)
 
-        pdf_content = body_params['pdf_content'] if 'pdf_content' in body_params else None
-        user_id = body_params['user_id'] if 'user_id' in body_params else None
+        name = request.json.get('name', None)
+        pdf_content = request.json.get('pdf_content', None)
+        auth_user = request.json.get('auth_user', None)
+        user_id = auth_user['user_id'] if 'user_id' in auth_user else None
 
         document_data = {
+            'name': name,
             'pdf_content': pdf_content,
             'user_id': user_id,
         }

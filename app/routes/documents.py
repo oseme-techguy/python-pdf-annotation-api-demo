@@ -1,6 +1,6 @@
 """PDF Annotation API application - document routes."""
 
-from sanic_jwt import protected
+from sanic_jwt import protected, inject_user
 
 
 def set_document_routes(web_api, controller):
@@ -19,8 +19,10 @@ def set_document_routes(web_api, controller):
         return controller.get_documents(request, *args, **kwargs)
 
     @web_api.route('/documents', methods=['POST']) # upload document
+    @inject_user()
     @protected()
-    def upload_documents(request, *args, **kwargs):
+    def upload_documents(request, user, *args, **kwargs):
+        request.json.update({'auth_user': user})
         return controller.upload_documents(request, *args, **kwargs)
 
     @web_api.route('/documents/<document_id>', methods=['PATCH']) # patch
